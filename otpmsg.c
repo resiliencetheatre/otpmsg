@@ -299,19 +299,22 @@ int main (int argc, char *argv[])
                 {
                     memset(plaintext, 0, PLAINTEXT_BUF_LEN);
                     base64_in_buffer = base64_decode((unsigned char*)buf_input, strnlen(buf_input,TRANSPORT_BUF_LEN),&base64_inputlen);
-                    if ( decrypted_input_len > 0 ) 
-                    {
+                    
                         if ( base64_in_buffer != NULL )
                         {
                             decrypted_input_len = decryptpacket(plaintext,(char *)base64_in_buffer,base64_inputlen,decrypt_keyfile, keyindex_filename_decrypt);
-                            if (write(fd_out, plaintext, decrypted_input_len) <= 0)
+                            if ( decrypted_input_len > 0 ) 
                             {
-                                log_error("[%d] Failed to write FIFO %s", getpid(), outgoing_pipe);
-                                return 1;
+                                if (write(fd_out, plaintext, decrypted_input_len) <= 0)
+                                {
+                                    log_error("[%d] Failed to write FIFO %s", getpid(), outgoing_pipe);
+                                    return 1;
+                                }
                             }
+                            free(base64_in_buffer);
                         }
-                    }
-                    free(base64_in_buffer);
+                    
+                    
                 } 
                 else
                 {
